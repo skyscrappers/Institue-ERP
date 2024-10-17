@@ -1,0 +1,1 @@
+A comprehensive Institute ERP (Enterprise Resource Planning) system to manage academic data, including students, professors, courses, and credits. The system integrates key relationships between entities, supports student enrollment, tracks course credits.
