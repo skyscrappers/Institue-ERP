@@ -1,0 +1,23 @@
+CREATE:
+
+db.courses.createIndex({ department: 1, is_core: 1 });
+
+db.courses.createIndex({ "enrollments._id": 1 });
+
+db.courses.createIndex({ instructor: 1 });
+
+db.instructors.createIndex({ "courses._id": 1 });
+
+db.departments.createIndex({ "students._id": 1 });
+
+DROP:
+
+db.courses.dropIndex("department_1_is_core_1");
+
+db.courses.dropIndex("enrollments._id_1");
+
+db.courses.dropIndex("instructor_1");
+
+db.instructors.dropIndex("courses._id_1");
+
+db.departments.dropIndex("students._id_1");

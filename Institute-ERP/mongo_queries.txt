@@ -1,0 +1,146 @@
+Departments:
+{
+  "_id": ObjectId(),           // MongoDB ObjectId for the department (Primary Key)
+  "department_id": Integer,    // Original department_id from PostgreSQL
+  "department_name": "String", // Name of the department (e.g., "Computer Science")
+  "instructors": [             // Embedded list of instructors in the department
+    {
+      "instructor_id": ObjectId(),  // Reference to the instructor's _id
+      "name": "String"              // Name of the instructor
+    }
+  ],
+  "students": [                // Embedded list of students in the department
+    {
+      "student_id": ObjectId(),  // Reference to the student's _id
+      "name": "String"           // Name of the student
+    }
+  ]
+}
+
+
+
+Instructors:
+{
+  "_id": ObjectId(),           // MongoDB ObjectId for the instructor (Primary Key)
+  "instructor_id": Integer,    // Original instructor_id from PostgreSQL
+  "name": "String",            // Name of the instructor
+  "department": ObjectId(),    // Reference to the _id of the Departments collection
+  "courses": [                 // Embedded list of courses taught by the instructor
+    {
+      "course_id": ObjectId(), // Reference to the course _id from the Courses collection
+      "is_core": Boolean       // Indicates if the course is a core course
+    }
+  ]
+}
+
+
+Courses:
+{
+  "_id": ObjectId(),           // MongoDB ObjectId for the course (Primary Key)
+  "course_id": Integer,        // Original course_id from PostgreSQL
+  "course_name": "String",     // Name of the course
+  "department": ObjectId(),    // Reference to the _id of the Departments collection
+  "instructor": ObjectId(),    // Reference to the _id of the Instructors collection
+  "is_core": Boolean,          // True if the course is a core course, False otherwise
+  "enrollments": [             // Embedded list of students enrolled in the course
+    {
+      "student_id": ObjectId(),    // Reference to the student's _id from Students collection
+      "student_name": "String",    // Name of the student
+      "enrollment_date": Date,     // Date of enrollment
+      "semester": "String"         // Semester of enrollment
+    }
+  ]
+}
+
+Students:
+{
+  "_id": ObjectId(),           // MongoDB ObjectId for the student (Primary Key)
+  "student_id": Integer,       // Original student_id from PostgreSQL
+  "name": "String",            // Name of the student
+  "department": ObjectId(),    // Reference to the _id of the Departments collection
+  "enrollments": [             // Embedded list of courses the student is enrolled in
+    {
+      "course_id": ObjectId(),     // Reference to the course _id from the Courses collection
+      "enrollment_date": Date,     // Date of enrollment
+      "semester": "String"         // Semester of enrollment
+    }
+  ]
+}
+
+Queries:
+
+1. Fetching all students enrolled in a specific course.
+
+db.courses.find(
+  { "course_name": "Machine Learning" },
+  { "enrollments.name": 1, _id: 0 }
+)
+
+
+
+2. Calculating the average number of students enrolled in courses offered by a
+particular instructor at the university.
+
+
+db.courses.aggregate([
+  {
+    $match: { 
+      "instructor": 31  
+    }
+  },
+  {
+    $project: { 
+      num_students: { $size: "$enrollments" }  
+    }
+  },
+  {
+    $group: { 
+      _id: "$instructor", 
+      avg_students: { $avg: "$num_students" }  
+    }
+  }
+])
+
+3. Listing all courses offered by a specific department.
+
+const departmentId = 1; 
+const courses = db.courses.find({ "department": departmentId });
+let courseNames = [];
+courses.forEach(course => {
+courseNames.push(course.course_name);
+});
+print("Courses offered by department", departmentId, ":");
+courseNames.forEach(name => print(name));
+
+4. Finding the total number of students per department.
+db.departments.find({_id: 1},{"students.name":1, _id : 0})
+
+5. Finding instructors who have taught all the BTech CSE core courses sometime
+during their tenure at the university.
+
+db.instructors.find({
+ "courses._id": { $all: db.courses.find(
+ { department: 1, is_core: true }, 
+ { _id: 1 }
+ ).toArray().map(course => course._id)}
+ });
+
+6. Finding top-10 courses with the highest enrollments.
+db.courses.aggregate([
+  {
+    $project: {
+      course_name: 1,                        
+      num_enrollments: { $size: "$enrollments" }  
+    }
+  },
+  {
+    $sort: { num_enrollments: -1 } 
+  },
+  {
+    $limit: 10  
+  },
+  {
+    $project: { course_name: 1, _id: 0 }  
+  }
+])
+

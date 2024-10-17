@@ -1,0 +1,6 @@
+Query 1 execution time: 0.1411435604095459 seconds
+Query 2 execution time: 0.06645965576171875 seconds
+Query 3 execution time: 0.012083292007446289 seconds
+Query 4 execution time: 0.020113229751586914 seconds
+Query 5 execution time: 0.21113014221191406 seconds
+Query 6 execution time: 0.024239301681518555 seconds

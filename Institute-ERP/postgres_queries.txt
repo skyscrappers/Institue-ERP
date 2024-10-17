@@ -1,0 +1,65 @@
+Finding instructors who have taught all the BTech CSE core courses sometime
+during their tenure at the university.
+
+-- Step 1: Find all core courses for the CSE department
+WITH CSE_Core_Courses AS (
+    SELECT course_id
+    FROM Courses
+    WHERE department_id = 1
+      AND is_core = TRUE
+),
+
+-- Step 2: Find instructors who have taught those core courses
+Instructors_Taught_Core_Courses AS (
+    SELECT DISTINCT c.instructor_id
+    FROM Courses c
+    JOIN CSE_Core_Courses cc ON c.course_id = cc.course_id
+),
+
+-- Step 3: Find instructors who have taught all the core courses
+Instructors_With_All_Core_Courses AS (
+    SELECT itc.instructor_id
+    FROM Instructors_Taught_Core_Courses itc
+    JOIN CSE_Core_Courses cc ON cc.course_id IN (
+        SELECT course_id
+        FROM Courses
+        WHERE instructor_id = itc.instructor_id
+    )
+    GROUP BY itc.instructor_id
+    HAVING COUNT(cc.course_id) = (SELECT COUNT(*) FROM CSE_Core_Courses)
+)
+
+-- Step 4: Retrieve the names of those instructors
+SELECT i.instructor_id, i.name
+FROM Instructors i
+JOIN Instructors_With_All_Core_Courses ic ON i.instructor_id = ic.instructor_id;
+
+Calculating the average number of students enrolled in courses offered by a
+particular instructor at the university.
+
+SELECT AVG(course_enrollments) AS average_enrollments
+FROM (
+    SELECT c.instructor_id, COUNT(e.student_id) AS course_enrollments
+    FROM Courses c
+    JOIN Enrollments e ON c.course_id = e.course_id
+    WHERE c.instructor_id = 14
+    GROUP BY c.instructor_id, c.course_id
+) AS enrollments_per_course;
+
+
+Finding top-10 courses with the highest enrollments.
+
+SELECT c.course_id, c.course_name, COUNT(e.student_id) AS enrollment_count
+FROM Courses c
+JOIN Enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_id, c.course_name
+ORDER BY enrollment_count DESC
+LIMIT 10;
+
+
+Finding the total number of students per department.
+
+SELECT d.department_name, COUNT(s.student_id) AS total_students
+FROM Students s
+JOIN Departments d ON s.department_id = d.department_id
+GROUP BY d.department_name;
